@@ -1,24 +1,511 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Room-Aware Neural Speech Masking with Perceptual and ASR-Based Objectives — paper, listening examples, and experimental results.">
-<title>Room-Aware Neural Speech Masking | Research Demo</title>
-<link rel="stylesheet" href="styles.css">
-</head>
-<body>
-<header class="topbar"><a class="brand" href="#top"><span class="brand-icon">◉</span> ROOM-AWARE <span class="brand-light">/ SPEECH MASKING</span></a><nav aria-label="Main navigation"><a href="#abstract">Abstract</a><a href="#audio">Audio</a><a href="#results">Results</a><a href="#citation">Citation</a></nav><a class="nav-code" data-code-link href="#code">↗ Code</a></header>
-<main id="top">
-<section class="hero wrap"><div class="eyebrow"><span class="signal"></span> SPEECH PROCESSING · RESEARCH DEMO</div><h1>Room-Aware<br><em>Neural Speech Masking</em></h1><p class="subtitle">with Perceptual and ASR-Based Objectives</p><p class="authors">Aine Drelingyte <span>·</span> Romain Serizel <span>·</span> Mathieu Lagrange</p><p class="affiliations">Université de Lorraine · LORIA · Nantes Université · LS2N</p><div class="hero-actions"><a class="btn primary" href="#audio">▶ Explore audio examples</a><a class="btn secondary" data-paper-link href="#paper">↗ Read paper</a><a class="btn secondary" data-code-link href="#code">⌘ Source code</a></div><div class="hero-footer"><span>3 acoustic paths</span><span>2 learning objectives</span><span>0 / 5 / 10 dB MCR</span></div></section>
-<section id="abstract" class="section wrap"><div class="section-label">01 / OVERVIEW</div><div class="split"><div><h2>Mask the speech.<br><span class="muted">Model the room.</span></h2><div class="accent-line"></div><p class="lead">Can a learned additive masker reduce objective speech intelligibility more effectively than conventional speech-shaped noise at the same energy budget?</p></div><div class="abstract-copy"><h3>Abstract</h3><p>Open-plan offices present a significant challenge for cognitive performance, as background speech from nearby conversations is a major source of distraction. Noise-generation machines (NGMs) address this by adding masking noise to reduce speech intelligibility, but conventional maskers such as white noise (WN) and speech-shaped noise (SSN) provide limited reduction for a given energy budget. We investigate learned additive maskers in a physically realistic scenario incorporating room impulse responses (RIRs), modeling the NGM as a loudspeaker-based device across three acoustic paths: speaker-to-NGM, speaker-to-listener, and NGM-to-listener. A Wave-U-Net concealer is trained under two objectives: a STOI-only loss and a joint CTC+STOI loss, both subject to a hard mixture-to-concealer ratio (MCR) constraint. Room impulse responses are simulated across randomised office geometries, and the concealer is trained on dry speech convolved with the speaker-to-NGM path. We evaluate on a held-out test set under both anechoic and realistic office-babble conditions across three MCR levels. The results demonstrate that RIR-aware learned maskers substantially degrade objective intelligibility metrics compared with conventional SSN at matched MCRs.</p><p class="fine">Objective metrics and ASR evaluations only; no human listening-test claim is made.</p></div></div><div class="path-diagram" aria-label="Speech passes along three acoustic paths: speaker to noise-generation machine, speaker to listener, and masker to listener"><div class="path-node">SPEAKER <small>Target speech</small></div><div class="path-lines"><span>RIR₁ → NGM → MASKER → RIR₃</span><span>RIR₂ → DIRECT SPEECH</span></div><div class="path-node">LISTENER <small>Speech + masker</small></div></div></section>
-<section id="audio" class="section section-alt"><div class="wrap"><div class="section-label">02 / LISTENING DEMO</div><div class="section-heading"><div><h2>Hear the difference<span class="period">.</span></h2><p>Listen to the same utterance with different maskers. Select one sample and a matched mixture-to-concealer ratio (MCR).</p></div><div class="control"><label for="sample">REFERENCE UTTERANCE</label><select id="sample"><option value="sample-01">Sample 01</option><option value="sample-02">Sample 02</option><option value="sample-03">Sample 03</option></select></div></div><div class="listen-grid"><article class="listen-card reference"><div class="card-kicker"><span class="tag">REFERENCE</span><span class="index">01</span></div><h3>Reference speech</h3><p>The target speech at the listener, before the addition of a masker.</p><div class="audio-area"><audio id="reference-player" controls preload="none" aria-label="Reference speech"></audio><p id="reference-status" class="audio-status" role="status"></p></div></article><article class="listen-card"><div class="card-kicker"><span class="tag">REFERENCE + BABBLE</span><span class="index">02</span></div><h3>Office background</h3><p>Target speech mixed with competing-talker office babble, without an additional masker.</p><div class="audio-area"><audio id="babble-player" controls preload="none" aria-label="Reference speech with babble"></audio><p id="babble-status" class="audio-status" role="status"></p></div></article></div><div class="comparison-top"><div><div class="section-label small">MATCHED-ENERGY COMPARISON</div><h3>Learned masking vs. SSN</h3><p>All conditions below must use the same utterance, acoustic scene, babble condition, and listener-position MCR.</p></div><div class="mcr-switch" role="group" aria-label="Mixture-to-concealer ratio"><button class="active" data-mcr="0" aria-pressed="true">0 dB</button><button data-mcr="5" aria-pressed="false">5 dB</button><button data-mcr="10" aria-pressed="false">10 dB</button></div></div><div class="compare-grid"><article class="listen-card baseline"><div class="card-kicker"><span class="tag">CONVENTIONAL BASELINE</span><span class="index">A</span></div><h3>Speech-shaped noise</h3><p>Static noise shaped according to the long-term speech spectrum.</p><div class="audio-area"><audio id="ssn-player" controls preload="none" aria-label="Speech-shaped noise baseline"></audio><p id="ssn-status" class="audio-status" role="status"></p></div></article><article class="listen-card learned"><div class="card-kicker"><span class="tag purple">LEARNED MASKER</span><span class="index">B</span></div><h3>STOI-only</h3><p>Wave-U-Net trained to minimise STOI under an MCR constraint.</p><div class="audio-area"><audio id="stoi-player" controls preload="none" aria-label="STOI-only learned masker"></audio><p id="stoi-status" class="audio-status" role="status"></p></div></article><article class="listen-card learned"><div class="card-kicker"><span class="tag purple">LEARNED MASKER</span><span class="index">C</span></div><h3>CTC + STOI</h3><p>Wave-U-Net trained using a joint ASR and STOI objective.</p><div class="audio-area"><audio id="ctc-stoi-player" controls preload="none" aria-label="CTC plus STOI learned masker"></audio><p id="ctc-stoi-status" class="audio-status" role="status"></p></div></article></div><p class="audio-note">Use headphones and keep playback volume constant. These examples demonstrate the signal conditions; they are not a substitute for controlled human intelligibility testing.</p></div></section>
-<section id="results" class="section wrap"><div class="section-label">03 / EXPERIMENTAL RESULTS</div><div class="section-heading"><div><h2>Results at a glance<span class="period">.</span></h2><p>Reported results from the paper. WER is corpus word error rate; higher WER indicates greater ASR degradation, not a measured human-listening outcome.</p></div></div><div class="metric-grid"><div class="metric"><span>FASTCONFORMER · NO BABBLE</span><strong>59.38<span>%</span></strong><p>STOI-only WER at 5 dB MCR</p><small>SSN: 11.43%</small></div><div class="metric"><span>WHISPER · NO BABBLE</span><strong>58.72<span>%</span></strong><p>STOI-only WER at 5 dB MCR</p><small>SSN: 8.31%</small></div><div class="metric"><span>FASTCONFORMER · BABBLE</span><strong>79.86<span>%</span></strong><p>STOI-only WER at 5 dB MCR</p><small>SSN: 28.05%</small></div></div><div class="results-panel"><div class="results-head"><div><h3>ASR degradation by masking condition</h3><p>Corpus WER (%) · 5 dB MCR · matched conditions</p></div><div class="toggle" role="group" aria-label="Evaluation condition"><button class="active" data-scene="nb" aria-pressed="true">No babble</button><button data-scene="b" aria-pressed="false">With babble</button></div></div><div id="bars" class="bars" role="img" aria-label="Bar chart of WER values at 5 dB MCR"></div><p class="chart-note">Lower STOI and HASPI indicate reduced objective intelligibility; higher WER indicates greater ASR degradation. The listening examples above are separate from these numerical measurements.</p></div><div class="insights"><div><span class="insight-num">01</span><h3>Consistent ASR degradation</h3><p>At 5 dB MCR, both learned methods yield higher WER than SSN and white noise in both evaluated recognisers and both background conditions.</p></div><div><span class="insight-num">02</span><h3>Independent intelligibility metric</h3><p>At 5 dB MCR, CTC+STOI achieves lower HASPI than both conventional baselines; the WER differences between the two learned objectives are small.</p></div><div><span class="insight-num">03</span><h3>Acoustic and delay robustness</h3><p>The study examines varying reverberation, source distance, and an unseen additional 2.9 ms processing-delay shift.</p></div></div></section>
-<section id="citation" class="section section-alt"><div class="wrap"><div class="section-label">04 / REPRODUCIBILITY</div><div class="split citation-split"><div><h2>Cite this work<span class="period">.</span></h2><p class="lead">Use the provisional BibTeX entry below. Add the final venue, year, DOI, and paper URL once publication metadata is available.</p><div class="hero-actions"><a class="btn primary" data-code-link href="#code">↗ GitHub repository</a><a class="btn secondary" data-paper-link href="#paper">↗ Paper PDF</a></div></div><div class="bib-card"><div class="bib-top"><span>BIBTEX</span><button id="copy-bib" type="button">Copy citation ↗</button></div><pre id="bibtex">@misc{drelingyte_room_aware_masking,
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <meta content="Room-Aware Neural Speech Masking with Perceptual and ASR-Based Objectives — paper, listening examples, and experimental results." name="description"/>
+  <title>
+   Room-Aware Neural Speech Masking | Research Demo
+  </title>
+  <link href="styles.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <header class="topbar">
+   <a class="brand" href="#top">
+    <span class="brand-icon">
+     ◉
+    </span>
+    ROOM-AWARE
+    <span class="brand-light">
+     / SPEECH MASKING
+    </span>
+   </a>
+   <nav aria-label="Main navigation">
+    <a href="#abstract">
+     Abstract
+    </a>
+    <a href="#audio">
+     Audio
+    </a>
+    <a href="#results">
+     Results
+    </a>
+    <a href="#citation">
+     Citation
+    </a>
+   </nav>
+   <a class="nav-code" data-code-link="" href="#code">
+    ↗ Code
+   </a>
+  </header>
+  <main id="top">
+   <section class="hero wrap">
+    <div class="eyebrow">
+     <span class="signal">
+     </span>
+     SPEECH PROCESSING · RESEARCH DEMO
+    </div>
+    <h1>
+     Room-Aware
+     <br/>
+     <em>
+      Neural Speech Masking
+     </em>
+    </h1>
+    <p class="subtitle">
+     with Perceptual and ASR-Based Objectives
+    </p>
+    <p class="authors">
+     Aine Drelingyte
+     <span>
+      ·
+     </span>
+     Romain Serizel
+     <span>
+      ·
+     </span>
+     Mathieu Lagrange
+    </p>
+    <p class="affiliations">
+     Université de Lorraine · LORIA · Nantes Université · LS2N
+    </p>
+    <div class="hero-actions">
+     <a class="btn primary" href="#audio">
+      ▶ Explore audio examples
+     </a>
+     <a class="btn secondary" data-paper-link="" href="#paper">
+      ↗ Read paper
+     </a>
+     <a class="btn secondary" data-code-link="" href="#code">
+      ⌘ Source code
+     </a>
+    </div>
+   </section>
+   <section class="section wrap" id="abstract">
+    <div class="section-label">
+     01 / OVERVIEW
+    </div>
+    <div class="split">
+     <div>
+      <h2>
+       Mask the speech.
+       <br/>
+       <span class="muted">
+        Model the room.
+       </span>
+      </h2>
+      <div class="accent-line">
+      </div>
+      <p class="lead">
+       Can a learned additive masker reduce objective speech intelligibility more effectively than conventional speech-shaped noise at the same energy budget?
+      </p>
+     </div>
+     <div class="abstract-copy">
+      <h3>
+       Abstract
+      </h3>
+      <p>
+       Open-plan offices present a significant challenge for cognitive performance, as background speech from nearby conversations is a major source of distraction. Noise-generation machines (NGMs) address this by adding masking noise to reduce speech intelligibility, but conventional maskers such as white noise (WN) and speech-shaped noise (SSN) provide limited reduction for a given energy budget. We investigate learned additive maskers in a physically realistic scenario incorporating room impulse responses (RIRs), modeling the NGM as a loudspeaker-based device across three acoustic paths: speaker-to-NGM, speaker-to-listener, and NGM-to-listener. A Wave-U-Net concealer is trained under two objectives: a STOI-only loss and a joint CTC+STOI loss, both subject to a hard mixture-to-concealer ratio (MCR) constraint. Room impulse responses are simulated across randomised office geometries, and the concealer is trained on dry speech convolved with the speaker-to-NGM path. We evaluate on a held-out test set under both anechoic and realistic office-babble conditions across three MCR levels. The results demonstrate that RIR-aware learned maskers substantially degrade objective intelligibility metrics compared with conventional SSN at matched MCRs.
+      </p>
+      <p class="fine">
+       Objective metrics and ASR evaluations only; no human listening-test claim is made.
+      </p>
+     </div>
+    </div>
+    <div aria-label="Speech passes along three acoustic paths: speaker to noise-generation machine, speaker to listener, and masker to listener" class="path-diagram">
+     <div class="path-node">
+      SPEAKER
+      <small>
+       Target speech
+      </small>
+     </div>
+     <div class="path-lines">
+      <span>
+       RIR₁ → NGM → MASKER → RIR₃
+      </span>
+      <span>
+       RIR₂ → DIRECT SPEECH
+      </span>
+     </div>
+     <div class="path-node">
+      LISTENER
+      <small>
+       Speech + masker
+      </small>
+     </div>
+    </div>
+   </section>
+   <section class="section section-alt" id="audio">
+    <div class="wrap">
+     <div class="section-label">
+      02 / LISTENING DEMO
+     </div>
+     <div class="section-heading">
+      <div>
+       <h2>
+        Hear the difference
+        <span class="period">
+         .
+        </span>
+       </h2>
+       <p>
+        Listen to the same utterance with different maskers. Select one sample and a matched mixture-to-concealer ratio (MCR).
+       </p>
+      </div>
+      <div class="control">
+       <label for="sample">
+        REFERENCE UTTERANCE
+       </label>
+       <select id="sample">
+        <option value="sample-01">
+         Sample 01
+        </option>
+        <option value="sample-02">
+         Sample 02
+        </option>
+        <option value="sample-03">
+         Sample 03
+        </option>
+       </select>
+      </div>
+     </div>
+     <div class="listen-grid">
+      <article class="listen-card reference">
+       <div class="card-kicker">
+        <span class="tag">
+         REFERENCE
+        </span>
+        <span class="index">
+         01
+        </span>
+       </div>
+       <h3>
+        Reference speech
+       </h3>
+       <p>
+        The target speech at the listener, before the addition of a masker.
+       </p>
+       <div class="audio-area">
+        <audio aria-label="Reference speech" controls="" id="reference-player" preload="none">
+        </audio>
+        <p class="audio-status" id="reference-status" role="status">
+        </p>
+       </div>
+      </article>
+      <article class="listen-card">
+       <div class="card-kicker">
+        <span class="tag">
+         REFERENCE + BABBLE
+        </span>
+        <span class="index">
+         02
+        </span>
+       </div>
+       <h3>
+        Office background
+       </h3>
+       <p>
+        Target speech mixed with competing-talker office babble, without an additional masker.
+       </p>
+       <div class="audio-area">
+        <audio aria-label="Reference speech with babble" controls="" id="babble-player" preload="none">
+        </audio>
+        <p class="audio-status" id="babble-status" role="status">
+        </p>
+       </div>
+      </article>
+     </div>
+     <div class="comparison-top">
+      <div>
+       <div class="section-label small">
+        MATCHED-ENERGY COMPARISON
+       </div>
+       <h3>
+        Learned masking vs. SSN
+       </h3>
+       <p>
+        All conditions below must use the same utterance, acoustic scene, babble condition, and listener-position MCR.
+       </p>
+      </div>
+      <div aria-label="Mixture-to-concealer ratio" class="mcr-switch" role="group">
+       <button aria-pressed="true" class="active" data-mcr="0">
+        0 dB
+       </button>
+       <button aria-pressed="false" data-mcr="5">
+        5 dB
+       </button>
+       <button aria-pressed="false" data-mcr="10">
+        10 dB
+       </button>
+      </div>
+     </div>
+     <div class="compare-grid">
+      <article class="listen-card baseline">
+       <div class="card-kicker">
+        <span class="tag">
+         CONVENTIONAL BASELINE
+        </span>
+        <span class="index">
+         A
+        </span>
+       </div>
+       <h3>
+        Speech-shaped noise
+       </h3>
+       <p>
+        Static noise shaped according to the long-term speech spectrum.
+       </p>
+       <div class="audio-area">
+        <audio aria-label="Speech-shaped noise baseline" controls="" id="ssn-player" preload="none">
+        </audio>
+        <p class="audio-status" id="ssn-status" role="status">
+        </p>
+       </div>
+      </article>
+      <article class="listen-card learned">
+       <div class="card-kicker">
+        <span class="tag purple">
+         LEARNED MASKER
+        </span>
+        <span class="index">
+         B
+        </span>
+       </div>
+       <h3>
+        STOI-only
+       </h3>
+       <p>
+        Wave-U-Net trained to minimise STOI under an MCR constraint.
+       </p>
+       <div class="audio-area">
+        <audio aria-label="STOI-only learned masker" controls="" id="stoi-player" preload="none">
+        </audio>
+        <p class="audio-status" id="stoi-status" role="status">
+        </p>
+       </div>
+      </article>
+      <article class="listen-card learned">
+       <div class="card-kicker">
+        <span class="tag purple">
+         LEARNED MASKER
+        </span>
+        <span class="index">
+         C
+        </span>
+       </div>
+       <h3>
+        CTC + STOI
+       </h3>
+       <p>
+        Wave-U-Net trained using a joint ASR and STOI objective.
+       </p>
+       <div class="audio-area">
+        <audio aria-label="CTC plus STOI learned masker" controls="" id="ctc-stoi-player" preload="none">
+        </audio>
+        <p class="audio-status" id="ctc-stoi-status" role="status">
+        </p>
+       </div>
+      </article>
+     </div>
+     <p class="audio-note">
+      Use headphones and keep playback volume constant. These examples demonstrate the signal conditions; they are not a substitute for controlled human intelligibility testing.
+     </p>
+    </div>
+   </section>
+   <section class="section wrap" id="results">
+    <div class="section-label">
+     03 / EXPERIMENTAL RESULTS
+    </div>
+    <div class="section-heading">
+     <div>
+      <h2>
+       Results at a glance
+       <span class="period">
+        .
+       </span>
+      </h2>
+      <p>
+       Reported results from the paper. WER is corpus word error rate; higher WER indicates greater ASR degradation, not a measured human-listening outcome.
+      </p>
+     </div>
+    </div>
+    <div class="metric-grid">
+     <div class="metric">
+      <span>
+       FASTCONFORMER · NO BABBLE
+      </span>
+      <strong>
+       59.38
+       <span>
+        %
+       </span>
+      </strong>
+      <p>
+       STOI-only WER at 5 dB MCR
+      </p>
+      <small>
+       SSN: 11.43%
+      </small>
+     </div>
+     <div class="metric">
+      <span>
+       WHISPER · NO BABBLE
+      </span>
+      <strong>
+       58.72
+       <span>
+        %
+       </span>
+      </strong>
+      <p>
+       STOI-only WER at 5 dB MCR
+      </p>
+      <small>
+       SSN: 8.31%
+      </small>
+     </div>
+     <div class="metric">
+      <span>
+       FASTCONFORMER · BABBLE
+      </span>
+      <strong>
+       79.86
+       <span>
+        %
+       </span>
+      </strong>
+      <p>
+       STOI-only WER at 5 dB MCR
+      </p>
+      <small>
+       SSN: 28.05%
+      </small>
+     </div>
+    </div>
+    <div class="results-panel">
+     <div class="results-head">
+      <div>
+       <h3>
+        ASR degradation by masking condition
+       </h3>
+       <p>
+        Corpus WER (%) · 5 dB MCR · matched conditions
+       </p>
+      </div>
+      <div aria-label="Evaluation condition" class="toggle" role="group">
+       <button aria-pressed="true" class="active" data-scene="nb">
+        No babble
+       </button>
+       <button aria-pressed="false" data-scene="b">
+        With babble
+       </button>
+      </div>
+     </div>
+     <div aria-label="Bar chart of WER values at 5 dB MCR" class="bars" id="bars" role="img">
+     </div>
+     <p class="chart-note">
+      Lower STOI and HASPI indicate reduced objective intelligibility; higher WER indicates greater ASR degradation. The listening examples above are separate from these numerical measurements.
+     </p>
+    </div>
+    <div class="insights">
+     <div>
+      <span class="insight-num">
+       01
+      </span>
+      <h3>
+       Consistent ASR degradation
+      </h3>
+      <p>
+       At 5 dB MCR, both learned methods yield higher WER than SSN and white noise in both evaluated recognisers and both background conditions.
+      </p>
+     </div>
+     <div>
+      <span class="insight-num">
+       02
+      </span>
+      <h3>
+       Independent intelligibility metric
+      </h3>
+      <p>
+       At 5 dB MCR, CTC+STOI achieves lower HASPI than both conventional baselines; the WER differences between the two learned objectives are small.
+      </p>
+     </div>
+     <div>
+      <span class="insight-num">
+       03
+      </span>
+      <h3>
+       Acoustic and delay robustness
+      </h3>
+      <p>
+       The study examines varying reverberation, source distance, and an unseen additional 2.9 ms processing-delay shift.
+      </p>
+     </div>
+    </div>
+   </section>
+   <section class="section section-alt" id="citation">
+    <div class="wrap">
+     <div class="section-label">
+      04 / REPRODUCIBILITY
+     </div>
+     <div class="split citation-split">
+      <div>
+       <h2>
+        Cite this work
+        <span class="period">
+         .
+        </span>
+       </h2>
+       <p class="lead">
+        Use the provisional BibTeX entry below. Add the final venue, year, DOI, and paper URL once publication metadata is available.
+       </p>
+       <div class="hero-actions">
+        <a class="btn primary" data-code-link="" href="#code">
+         ↗ GitHub repository
+        </a>
+        <a class="btn secondary" data-paper-link="" href="#paper">
+         ↗ Paper PDF
+        </a>
+       </div>
+      </div>
+      <div class="bib-card">
+       <div class="bib-top">
+        <span>
+         BIBTEX
+        </span>
+        <button id="copy-bib" type="button">
+         Copy citation ↗
+        </button>
+       </div>
+       <pre id="bibtex">@misc{drelingyte_room_aware_masking,
   title = {Room-Aware Neural Speech Masking with
            Perceptual and ASR-Based Objectives},
   author = {Drelingyte, Aine and Serizel, Romain
             and Lagrange, Mathieu},
   note = {Manuscript; publication details pending}
-}</pre><p id="copy-status" role="status" class="fine"></p></div></div><footer><span>ROOM-AWARE NEURAL SPEECH MASKING</span><span>ReNAR · Université de Lorraine / LORIA · Nantes Université / LS2N</span><a href="#top">Back to top ↑</a></footer></div></section>
-</main><script src="config.js"></script><script src="script.js"></script>
-</body></html>
+}</pre>
+       <p class="fine" id="copy-status" role="status">
+       </p>
+      </div>
+     </div>
+     <footer>
+      <span>
+       ROOM-AWARE NEURAL SPEECH MASKING
+      </span>
+      <span>
+       ReNAR · Université de Lorraine / LORIA · Nantes Université / LS2N
+      </span>
+      <a href="#top">
+       Back to top ↑
+      </a>
+     </footer>
+    </div>
+   </section>
+  </main>
+  <script src="config.js">
+  </script>
+  <script src="script.js">
+  </script>
+ </body>
+</html>
+
