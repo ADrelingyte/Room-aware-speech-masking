@@ -317,56 +317,9 @@ button {
 /* =========================
    Path diagram
    ========================= */
-
-.path-diagram {
-  margin-top: 70px;
-  padding: 25px 30px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-
-  background: #131a23;
-  border: 1px solid var(--line);
-}
-
-.path-node {
-  white-space: nowrap;
-  font: 600 14px 'Space Grotesk', sans-serif;
-}
-
-.path-node small {
-  display: block;
-
-  margin-top: 5px;
-
-  color: var(--muted);
-  font: 11px 'DM Mono', monospace;
-}
-
-.path-lines {
-  flex: 1;
-
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-
-  color: var(--acid);
-
-  text-align: center;
-  font: 11px 'DM Mono', monospace;
-  letter-spacing: 0.04em;
-}
-
-.path-lines span {
-  display: block;
-
-  padding: 3px 4px 8px;
-
-  border-bottom: 1px dashed #5f7354;
-}
-
+.pipeline-figure { margin: 3rem 0 0; }
+.pipeline-figure svg { width: 100%; height: auto; display: block; }
+.pipeline-figure figcaption { margin-top: 1rem; }
 
 /* =========================
    Section heading
