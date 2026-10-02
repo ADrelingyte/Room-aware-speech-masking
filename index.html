@@ -88,10 +88,10 @@
     <div class="split">
      <div>
       <h2>
-       Mask the speech.
+       Reducing speech intelligibility.
        <br/>
        <span class="muted">
-        Model the room.
+        Learned maskers.
        </span>
       </h2>
       <div class="accent-line">
@@ -112,28 +112,112 @@
       </p>
      </div>
     </div>
-    <div aria-label="Speech passes along three acoustic paths: speaker to noise-generation machine, speaker to listener, and masker to listener" class="path-diagram">
-     <div class="path-node">
-      SPEAKER
-      <small>
-       Target speech
-      </small>
-     </div>
-     <div class="path-lines">
-      <span>
-       RIR₁ → NGM → MASKER → RIR₃
-      </span>
-      <span>
-       RIR₂ → DIRECT SPEECH
-      </span>
-     </div>
-     <div class="path-node">
-      LISTENER
-      <small>
-       Speech + masker
-      </small>
-     </div>
-    </div>
+
+    
+
+
+
+<figure class="pipeline-figure">
+ <svg viewBox="0 0 760 290" role="img"
+      aria-label="RIR-based training pipeline: dry speech s is convolved with RIR1, RIR2 and RIR3; the concealer M-theta produces the masker c, scaled by alpha; the listener signal y feeds the STOI loss and, for the joint objective, an ASR model with CTC loss.">
+  <style>
+   .pf-line  { stroke:#9aa3b2; stroke-width:1.5; fill:none; }
+   .pf-dash  { stroke:#e0a458; stroke-width:1.5; fill:none; stroke-dasharray:5 4; }
+   .pf-box   { fill:rgba(255,255,255,.04); stroke-width:1.5; rx:6; }
+   .pf-rir   { stroke:#7aa2f7; }
+   .pf-model { stroke:#b58cff; }
+   .pf-asr   { stroke:#b8f04a; }
+   .pf-loss  { stroke:#e0a458; }
+   .pf-txt   { fill:#e6e8ee; font:500 14px ui-monospace,Menlo,Consolas,monospace; text-anchor:middle; dominant-baseline:middle; }
+   .pf-lab   { fill:#9aa3b2; font:italic 13px Georgia,'Times New Roman',serif; text-anchor:middle; }
+   .pf-sub   { font-size:10px; }
+  </style>
+  <defs>
+   <marker id="pf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="#9aa3b2"/>
+   </marker>
+   <marker id="pf-arrow-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="#e0a458"/>
+   </marker>
+  </defs>
+
+  <!-- input s and split -->
+  <text class="pf-lab" x="22" y="40">s</text>
+  <path class="pf-line" d="M14 50 H80" marker-end="url(#pf-arrow)"/>
+  <circle cx="50" cy="50" r="2.5" fill="#9aa3b2"/>
+  <path class="pf-line" d="M50 50 V140 H80" marker-end="url(#pf-arrow)"/>
+
+  <!-- top path: RIR1 -> M_theta -> alpha -> RIR3 -->
+  <rect class="pf-box pf-rir" x="80" y="30" width="70" height="40"/>
+  <text class="pf-txt" x="115" y="51">RIR₁</text>
+  <path class="pf-line" d="M150 50 H240" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="195" y="40">s ∗ RIR₁</text>
+
+  <rect class="pf-box pf-model" x="240" y="30" width="60" height="40"/>
+  <text class="pf-txt" x="270" y="51">M<tspan class="pf-sub" dy="4">θ</tspan></text>
+  <path class="pf-line" d="M300 50 H335" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="317" y="40">c</text>
+
+  <rect class="pf-box pf-model" x="335" y="30" width="40" height="40"/>
+  <text class="pf-txt" x="355" y="51">α</text>
+  <path class="pf-line" d="M375 50 H410" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="392" y="40">c̃</text>
+
+  <rect class="pf-box pf-rir" x="410" y="30" width="70" height="40"/>
+  <text class="pf-txt" x="445" y="51">RIR₃</text>
+  <path class="pf-line" d="M480 50 H509" marker-end="url(#pf-arrow)"/>
+
+  <!-- summation -->
+  <circle class="pf-line" cx="521" cy="50" r="11"/>
+  <path class="pf-line" d="M515 50 H527 M521 44 V56"/>
+  <path class="pf-line" d="M532 50 H600" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="566" y="40">y</text>
+
+  <!-- ASR -->
+  <rect class="pf-box pf-asr" x="600" y="30" width="70" height="40"/>
+  <text class="pf-txt" x="635" y="51">ASR</text>
+
+  <!-- direct path: RIR2 -->
+  <rect class="pf-box pf-rir" x="80" y="120" width="70" height="40"/>
+  <text class="pf-txt" x="115" y="141">RIR₂</text>
+  <path class="pf-line" d="M150 140 H521 V62" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="345" y="130">s ∗ RIR₂</text>
+
+  <!-- STOI loss: reference s*RIR2 and listener signal y -->
+  <circle cx="210" cy="140" r="2.5" fill="#9aa3b2"/>
+  <path class="pf-line" d="M210 140 V235 H330" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="265" y="225">s ∗ RIR₂</text>
+
+  <rect class="pf-box pf-loss" x="330" y="215" width="90" height="40"/>
+  <text class="pf-txt" x="375" y="236">ℒ<tspan class="pf-sub" dy="4">STOI</tspan></text>
+
+  <circle cx="556" cy="50" r="2.5" fill="#9aa3b2"/>
+  <path class="pf-line" d="M556 50 V235 H420" marker-end="url(#pf-arrow)"/>
+  <text class="pf-lab" x="490" y="225">y</text>
+
+  <!-- CTC branch (joint objective only) -->
+  <path class="pf-dash" d="M635 70 V215" marker-end="url(#pf-arrow-d)"/>
+  <rect class="pf-box pf-loss" x="590" y="215" width="90" height="40" stroke-dasharray="5 4"/>
+  <text class="pf-txt" x="635" y="236">ℒ<tspan class="pf-sub" dy="4">CTC</tspan></text>
+  <path class="pf-dash" d="M735 235 H680" marker-end="url(#pf-arrow-d)"/>
+  <text class="pf-lab" x="745" y="239">t</text>
+ </svg>
+ <figcaption class="fine">
+  RIR-based training pipeline. RIR₁, RIR₂ and RIR₃ are the speaker→NGM, speaker→listener and NGM→listener paths. The dashed branch (ℒ<sub>CTC</sub>) is active only for the joint objective.
+ </figcaption>
+</figure>
+
+
+
+
+
+
+    
+
+
+
+
+    
    </section>
    <section class="section section-alt" id="audio">
     <div class="wrap">
