@@ -74,7 +74,7 @@
       ▶ Explore audio examples
      </a>
      <a class="btn secondary" data-paper-link="" href="#paper">
-      ↗ Read paper
+      ↗ Read pre-print
      </a>
      <a class="btn secondary" data-code-link="" href="#code">
       ⌘ Source code
@@ -202,9 +202,20 @@
   <path class="pf-dash" d="M735 235 H680" marker-end="url(#pf-arrow-d)"/>
   <text class="pf-lab" x="745" y="239">t</text>
  </svg>
- <figcaption class="fine">
-  RIR-based training pipeline. RIR₁, RIR₂ and RIR₃ are the speaker→NGM, speaker→listener and NGM→listener paths. The dashed branch (ℒ<sub>CTC</sub>) is active only for the joint objective.
- </figcaption>
+<figcaption class="fine">
+ RIR-based training pipeline. Dry speech <i>s</i> is convolved
+ with RIR<sub>1</sub>, RIR<sub>2</sub>, and RIR<sub>3</sub>,
+ corresponding respectively to the speaker→NGM,
+ speaker→listener, and NGM→listener propagation paths.
+ The concealer <i>M</i><sub>θ</sub> operates on
+ <i>s</i> ∗ RIR<sub>1</sub> and produces the masker <i>c</i>, which is scaled
+ by α to obtain <i>c̃</i> = α<i>c</i> before propagation through
+ RIR<sub>3</sub>. The listener signal is
+ <i>y</i> = <i>s</i> ∗ RIR<sub>2</sub> + <i>c̃</i> ∗ RIR<sub>3</sub>.
+ The STOI loss uses <i>s</i> ∗ RIR<sub>2</sub> as the reference.
+ The dashed branch (ℒ<sub>CTC</sub>) is active only
+ for the joint objective.
+</figcaption>
 </figure>
 
 
@@ -308,7 +319,7 @@
         Learned masking vs. SSN
        </h3>
        <p>
-        All conditions below must use the same utterance, acoustic scene, babble condition, and listener-position MCR.
+        All conditions below use the same utterance, acoustic scene, babble condition, and listener-position MCR.
        </p>
       </div>
       <div aria-label="Mixture-to-concealer ratio" class="mcr-switch" role="group">
@@ -541,14 +552,14 @@
         </span>
        </h2>
        <p class="lead">
-        Use the provisional BibTeX entry below. Add the final venue, year, DOI, and paper URL once publication metadata is available.
+        Use the provisional BibTeX entry below. The final venue, year, DOI, and paper URL will be provided if/when metadata is available.
        </p>
        <div class="hero-actions">
         <a class="btn primary" data-code-link="" href="#code">
          ↗ GitHub repository
         </a>
         <a class="btn secondary" data-paper-link="" href="#paper">
-         ↗ Paper PDF
+         ↗ Pre-print PDF
         </a>
        </div>
       </div>
