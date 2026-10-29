@@ -1,12 +1,38 @@
 const cfg = window.SITE_CONFIG || {};
 const audioDir = (cfg.audioDirectory || 'audio').replace(/\/$/, '');
+/* Which file each player plays for each sample. The learned maskers and SSN were uploaded
+   as sample-01 at three MCRs: Sample 01 = 0 dB, Sample 02 = 5 dB, Sample 03 = 10 dB.
+   Edit this table (not the file names) if a file is added or renamed. */
+const SAMPLES = {
+  'sample-01': {
+    reference: 'sample-01_reference.wav',
+    babble: 'sample-01_babble.wav',
+    ssn: 'sample-01_ssn_0db.wav',
+    stoi: 'sample-01_stoi_0db.wav',
+    'ctc-stoi': 'sample-01_ctc-stoi_0db.wav'
+  },
+  'sample-02': {
+    reference: 'sample-02_reference.wav',
+    babble: 'sample-02_babble.wav',
+    ssn: 'sample-01_ssn_5db.wav',
+    stoi: 'sample-01_stoi_5db.wav',
+    'ctc-stoi': 'sample-01_ctc-stoi_5db.wav'
+  },
+  'sample-03': {
+    reference: 'sample-03_reference.wav',
+    babble: 'sample-03_babble.wav',
+    ssn: 'sample-01_ssn_10db.wav',
+    stoi: 'sample-01_stoi_10db.wav',
+    'ctc-stoi': 'sample-01-ctc-stoi_10db.wav'
+  }
+};
+/* The three buttons of the comparison part (data-mcr="0", "5", "10") select the same samples. */
+const MCR_TO_SAMPLE = { '0': 'sample-01', '5': 'sample-02', '10': 'sample-03' };
 let sample = 'sample-01';
-let mcr = '0';
 let scene = 'nb';
 const players = ['reference','babble','ssn','stoi','ctc-stoi'];
 function audioPath(kind) {
-  const name = kind === 'reference' || kind === 'babble' ? `${sample}_${kind}.wav` : `${sample}_${kind}_${mcr}db.wav`;
-  return `${audioDir}/${name}`;
+  return `${audioDir}/${SAMPLES[sample][kind]}`;
 }
 function updateAudio() {
   players.forEach(kind => {
@@ -44,11 +70,20 @@ async function probeAudio() {
 }
 probeAudio.requestId = 0;
 function refreshAudio() { updateAudio(); probeAudio(); }
-document.getElementById('sample').addEventListener('change', e => { sample = e.target.value; refreshAudio(); });
-document.querySelectorAll('[data-mcr]').forEach(button => button.addEventListener('click', () => {
-  mcr = button.dataset.mcr;
-  document.querySelectorAll('[data-mcr]').forEach(b => { const yes=b===button; b.classList.toggle('active',yes); b.setAttribute('aria-pressed',String(yes)); });
+// The dropdown and the three buttons always show the same sample.
+function selectSample(value) {
+  if (!SAMPLES[value]) return;
+  sample = value;
+  document.getElementById('sample').value = value;
+  document.querySelectorAll('[data-mcr]').forEach(b => {
+    const yes = MCR_TO_SAMPLE[b.dataset.mcr] === value;
+    b.classList.toggle('active', yes); b.setAttribute('aria-pressed', String(yes));
+  });
   refreshAudio();
+}
+document.getElementById('sample').addEventListener('change', e => selectSample(e.target.value));
+document.querySelectorAll('[data-mcr]').forEach(button => button.addEventListener('click', () => {
+  selectSample(MCR_TO_SAMPLE[button.dataset.mcr]);
 }));
 const data = {
   nb: [ ['Mixture',1.72,3.22], ['SSN',11.43,8.31], ['White noise',22.08,24.29], ['STOI-only',59.38,58.72], ['CTC + STOI',63.75,56.99] ],
@@ -89,4 +124,4 @@ document.getElementById('copy-bib').addEventListener('click',async()=>{
   try { await navigator.clipboard.writeText(document.getElementById('bibtex').textContent);status.textContent='Citation copied.'; }
   catch (_) {status.textContent='Select the BibTeX text above to copy it.';}
 });
-refreshAudio();renderBars();
+selectSample(sample);renderBars();
